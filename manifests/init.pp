@@ -46,15 +46,17 @@ class gollum {
 
   case $::os['family'] {
     'RedHat': {
-      $developmenttools = [ 'autoconf', 'automake' , 'binutils' , 'bison' , 'flex' ,
+      $developmenttools = [ 'autoconf' , 'automake' , 'binutils' , 'bison' , 'flex' ,
                             'gcc' , 'gcc-c++' , 'gettext' , 'libtool' , 'make' ,
                             'patch' , 'pkgconfig' , 'redhat-rpm-config' , 'rpm-build' , 'rpm-sign' ]
       $rubytools = [ 'ruby' , 'ruby-devel' , 'libicu' , 'libicu-devel' , 'zlib' , 'zlib-devel' , 'git' ]
     }
     'Debian': {
+      $developmenttools = [ 'build-essential' , 'make' ]
+      $rubytools = [ 'ruby1.9.3' , 'rubygems' , 'ruby-dev' , 'libicu-dev' , 'zlib1g-dev' , 'libicu-dev' ]
     }
     default: {
-      fail ("${::os['family']} is not supported")
+      notify { "${::os['family']} is not supported": }
     }
   }
 
@@ -62,10 +64,10 @@ class gollum {
   Package { ensure => 'installed' }
   package { $developmenttools: }
   package { $rubytools:
-    require  =>  $developmenttools,
+    require  => Package[ $developmenttools ],
   }
   package { 'gollum':
     provider => 'gem',
-    require  =>  $rubytools,
+    require  => Package[ $rubytools ],
   }
 }
